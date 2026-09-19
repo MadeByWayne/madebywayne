@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wayne Technique</title>
+    <link rel="icon" type="image/png" href="timer_icon.png">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #242424;
+            color: #999999;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .panel {
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .timer {
+            font-size: 3rem;
+            margin: 10px;
+        }
+
+        .small {
+            font-size: 2rem;
+        }
+
+        button {
+            background: #161616;
+            color: #999999;
+            padding: 10px 18px;
+            margin: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .history-box {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+
+        <h1>Wayne Technique</h1>
+
+        <p>
+            Timer allows for the same ratio of break to work as Pomodoro,
+            but allows you to take a break when ready rather than at 25 or 50 minute fixed intervals.
+        </p>
+
+        <h2>Stopwatch</h2>
+        <div id="t1" class="timer">00:00:00</div>
+
+        <div id="projectedFinish">Projected 8-Hour Completion: --</div>
+
+        <h2>Break Bank</h2>
+        <div id="t2" class="timer">00:00:00</div>
+
+        <h2>Break Count</h2>
+        <div id="breakCount" class="small">0</div>
+        <br>
+
+        <button onclick="startTimers()">Start</button>
+        <button onclick="pauseTimers()">Pause</button>
+        <button onclick="resumeMode()">Resume</button>
+        <button onclick="breakMode()">Break</button>
+        <button onclick="resetTimers()">Reset</button>
+	
+	<br><br>
+        <details>
+	<hr>
+            <summary><strong>History</strong></summary>
+
+            <h2>Break History</h2>
+            <div id="breakHistory" class="history-box">
+                No breaks recorded.
+            </div>
+	    <br><br>
+
+            <button onclick="saveDay()">End Day</button>
+
+            <h2>Daily History</h2>
+            <div id="dailyHistory" class="history-box">
+                No days recorded.
+            </div>
+	    <br>
+            <button onclick="resetDailyHistory()">Reset Daily History</button>
+        </details>
+
+
+        <br>
+	<details>
+	<hr>
+            <summary><strong>Time Adjustments</strong></summary>
+
+	    <h2>Starting Time</h2>
+
+	    <label>What time did you start working?</label><br>
+	    <input type="time" id="startTime">
+
+	    <br><br>
+
+	    <button onclick="applyStartingTime()">Apply Starting Time</button>
+<!--
+	    <br>
+	    <button onclick="deposit5Min()">Transfer 5 Min from Break Bank</button>
+	    <button onclick="depositAll()">Transfer Full Break Bank</button>
+-->
+	    <br><br>
+
+        </details>
+
+
+    </div>
+
+    <script>
+        // =====================================================
+        // Variables
+        // =====================================================
+
+        let normal = 0;
+        let slow = 0;
+        let breakCount = 0;
+        let last = null;
+        let mode = 'paused';
+
+        let breakStartTime = null;
+        let breakHistory = [];
+        let dailyHistory = [];
+
+        let lastBeepMilestone = 0;
+        let thirtyMinuteAlertGiven = false;
+        let bankEmptyAlertPlayed = false;
+
+function saveState() {
+
+    localStorage.setItem(
+        'pomodoroTimerState',
+        JSON.stringify({
+            normal,
+            slow,
+            breakCount,
+            breakHistory,
+            dailyHistory
+        })
+    );
+}
+
+function loadState() {
+    const saved =
+        localStorage.getItem('pomodoroTimerState');
+
+    if (saved) {
+
+        const state = JSON.parse(saved);
+
+        normal = state.normal || 0;
+        slow = state.slow || 0;
+        breakCount = state.breakCount || 0;
+        breakHistory = state.breakHistory || [];
+
+        document.getElementById('breakCount').textContent =
+            breakCount;
+
+	dailyHistory =
+    	     state.dailyHistory || [];
+
+        updateBreakHistory();
+	updateDailyHistory();
+    }
+}
+
+function fmt(ms) {
+    const sTotal = Math.floor(ms / 1000);
+    const h = Math.floor(sTotal / 3600);
+    const m = Math.floor((sTotal % 3600) / 60);
+    const s = sTotal % 60;
+
+    return (
+        String(h).padStart(2, '0') +
+        ':' +
+        String(m).padStart(2, '0') +
+        ':' +
+        String(s).padStart(2, '0')
+    );
+}
+
+function updateProjection() {
+
+    const target = 8 * 60 * 60 * 1000; // 8 hours
+
+    if (normal >= target) {
+        document.getElementById('projectedFinish').textContent =
+            '8 Hours Reached';
+        return;
+    }
+
+    const remaining = target - normal;
+
+    const projectedDate = new Date(Date.now() + remaining);
+
+    const timeString = projectedDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    document.getElementById('projectedFinish').textContent =
+        'Projected 8-Hour Completion: ' + timeString;
+}
+
+function startTimers(){
+    last=performance.now();
+    mode='running';
+}
+
+function pauseTimers(){
+
+    if (mode === 'break') {
+	logBreak();
+    }
+
+    mode='paused';
+    last=null;
+
+    saveState();
+}
+
+function resumeMode(){
+
+    logBreak();
+
+    last = performance.now();
+    mode = 'running';
+}
+
+function breakMode() {
+
+    if (mode !== 'break') {
+
+        breakCount++;
+
+        document.getElementById(
+            'breakCount'
+        ).textContent = breakCount;
+
+        breakStartTime = Date.now();
+
+        saveState();
+    }
+
+    last = performance.now();
+    mode = 'break';
+}
+
+function playBeep() {
+
+    const audioContext =
+        new (window.AudioContext || window.webkitAudioContext)();
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gainNode =
+        audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+
+    gainNode.gain.value = 0.15;
+
+    oscillator.start();
+
+    setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+    }, 250);
+}
+
+function playTripleBeep() {
+
+    const audioContext =
+        new (window.AudioContext || window.webkitAudioContext)();
+
+    function beep(delay) {
+
+        setTimeout(() => {
+
+            const oscillator =
+                audioContext.createOscillator();
+
+            const gainNode =
+                audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = "sine";
+
+            gainNode.gain.value = 0.15;
+
+            oscillator.start();
+
+            setTimeout(() => {
+                oscillator.stop();
+            }, 250);
+
+        }, delay);
+
+    }
+
+    beep(0);
+    beep(400);
+    beep(800);
+}
+
+
+function deposit5Min() {
+    const fiveMinutes = 5 * 60 * 1000;
+
+    if (slow >= fiveMinutes) {
+        slow -= fiveMinutes;
+        normal += fiveMinutes;
+    } else {
+        normal += slow;
+        slow = 0;
+    }
+}
+
+function depositAll() {
+    normal += slow;
+    slow = 0;
+}
+
+
+function logBreak() {
+
+    if (breakStartTime === null) return;
+
+    const breakEndTime = Date.now();
+
+    const duration =
+        breakEndTime - breakStartTime;
+
+    const startTime =
+        new Date(breakStartTime).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+    const endTime =
+        new Date(breakEndTime).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+    breakHistory.push({
+        number: breakCount,
+        start: startTime,
+        end: endTime,
+        duration: fmt(duration)
+    });
+
+    updateBreakHistory();
+
+    saveState();
+
+    breakStartTime = null;
+}
+
+function updateBreakHistory() {
+
+    const container =
+        document.getElementById("breakHistory");
+
+    if (breakHistory.length === 0) {
+        container.innerHTML =
+            "No breaks recorded.";
+        return;
+    }
+
+    container.innerHTML =
+        breakHistory
+            .map(item =>
+                 "Break #" + item.number +
+                 " | " + item.start +
+                 " - " + item.end +
+                 " | " + item.duration
+            )
+            .join("<br>");
+}
+
+function saveDay() {
+
+    const today = new Date().toLocaleDateString();
+
+    const entry = {
+        date: today,
+        workTime: fmt(normal),
+        bankTime: fmt(slow),
+        breaks: breakCount
+    };
+
+    dailyHistory.push(entry);
+
+    updateDailyHistory();
+
+    resetTimers()
+
+    saveState();
+}
+
+function updateDailyHistory() {
+
+    const container =
+        document.getElementById("dailyHistory");
+
+    if (dailyHistory.length === 0) {
+        container.innerHTML = "No days recorded.";
+        return;
+    }
+
+    container.innerHTML =
+        dailyHistory
+            .map(day =>
+                day.date +
+                " | Work: " + day.workTime +
+                " | Breaks: " + day.breaks +
+                " | Bank: " + day.bankTime
+            )
+            .join("<br>");
+}
+
+function resetDailyHistory() {
+
+    if (!confirm("Clear all daily history?")) {
+        return;
+    }
+
+    dailyHistory = [];
+
+    updateDailyHistory();
+
+    saveState();
+}
+
+/*
+function applyStartingValues() {
+
+    normal =
+        Number(document.getElementById('startWorkHours').value) * 3600000 +
+        Number(document.getElementById('startWorkMinutes').value) * 60000 +
+        Number(document.getElementById('startWorkSeconds').value) * 1000;
+
+    slow =
+        Number(document.getElementById('startBreakHours').value) * 3600000 +
+        Number(document.getElementById('startBreakMinutes').value) * 60000 +
+        Number(document.getElementById('startBreakSeconds').value) * 1000;
+
+    breakCount =
+        Number(document.getElementById('startBreakCount').value);
+
+    document.getElementById('t1').textContent = fmt(normal);
+    document.getElementById('t2').textContent = fmt(slow);
+    document.getElementById('breakCount').textContent = breakCount;
+
+    bankEmptyAlertPlayed = (slow <= 0);
+
+    lastBeepMilestone =
+    Math.floor(slow / (5 * 60 * 1000));
+
+    saveState();
+}
+*/
+
+function applyStartingTime() {
+
+    const timeInput =
+        document.getElementById('startTime').value;
+
+    if (!timeInput) {
+        alert("Please enter a starting time.");
+        return;
+    }
+
+    const [hours, minutes] = timeInput.split(':').map(Number);
+
+    const now = new Date();
+
+    const start = new Date();
+    start.setHours(hours, minutes, 0, 0);
+
+    if (start > now) {
+        alert("Starting time cannot be in the future.");
+        return;
+    }
+
+    const elapsed = now - start;
+
+    normal = elapsed;
+
+    slow = elapsed / 5;
+
+    document.getElementById('t1').textContent = fmt(normal);
+    document.getElementById('t2').textContent = fmt(slow);
+
+    bankEmptyAlertPlayed = (slow <= 0);
+
+    lastBeepMilestone =
+        Math.floor(slow / (5 * 60 * 1000));
+
+    last = performance.now();
+    mode = 'running';
+
+    saveState();
+}
+
+function resetTimers(){
+
+    normal = 0;
+    slow = 0;
+    breakCount = 0;
+    breakHistory = [];
+    lastBeepMilestone = 0;
+    thirtyMinuteAlertGiven = false;
+    bankEmptyAlertPlayed = false;
+
+    mode = 'paused';
+    last = null;
+
+    document.getElementById('breakCount').textContent = '0';
+
+    updateBreakHistory();
+
+    localStorage.removeItem('pomodoroTimerState');
+}
+
+function update(){
+   if(last!==null){
+   const now=performance.now();
+   const d=now-last;
+
+    if(mode==='running'){
+    normal += d;
+    slow += d/5;
+
+        if(slow > 0){
+        bankEmptyAlertPlayed = false;
+        }
+    }
+
+   else if(mode==='break'){
+
+      normal += d;
+      slow -= d;
+
+      if(slow <= 0 && !bankEmptyAlertPlayed){
+
+         bankEmptyAlertPlayed = true;
+
+         slow = 0;
+
+	 logBreak();
+
+         playTripleBeep();
+
+         mode = 'paused';
+         last = null;
+      }
+   }
+
+   if(last!==null) last=now;
+}
+
+ document.getElementById('t1').textContent=fmt(normal);
+ document.getElementById('t2').textContent=fmt(slow);
+ const currentMilestone =
+    Math.floor(slow / (5 * 60 * 1000));
+
+if (
+    currentMilestone > lastBeepMilestone &&
+    currentMilestone > 0
+) {
+    playBeep();
+    lastBeepMilestone = currentMilestone;
+}
+ updateProjection();
+ requestAnimationFrame(update);
+}
+
+setInterval(saveState, 5000);
+window.addEventListener('beforeunload', saveState);
+loadState();
+updateProjection();
+requestAnimationFrame(update);
+
+    </script>
+</body>
+</html>
