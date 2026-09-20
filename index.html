@@ -53,8 +53,8 @@
         <h1>Wayne Technique</h1>
 
         <p>
-            Timer allows for the same ratio of break to work as Pomodoro,
-            but allows you to take a break when ready rather than at 25 or 50 minute fixed intervals.
+            Timer matches the same proportion of break to work as Pomodoro,
+            but offers flexibilty to take a break when you choose, rather than at fixed intervals.
         </p>
 
         <h2>Stopwatch</h2>
@@ -140,6 +140,8 @@
         let lastBeepMilestone = 0;
         let thirtyMinuteAlertGiven = false;
         let bankEmptyAlertPlayed = false;
+
+Notification.requestPermission();
 
 function saveState() {
 
@@ -547,6 +549,17 @@ function resetTimers(){
     localStorage.removeItem('pomodoroTimerState');
 }
 
+function showNotifacation(title, message) {
+   if (Notification.permission === "granted") {
+	new Notifiction(title, {
+	   body: message,
+	   icon: "timer_icon.png"
+	});
+   } else if (Notification.permission !== "denied") {
+	Notification.requestPermission();
+   }
+}
+
 function update(){
    if(last!==null){
    const now=performance.now();
@@ -576,6 +589,13 @@ function update(){
 
          playTripleBeep();
 
+	 showNotification(
+	    "Break Bank Empty",
+	    "Your break bank has been depleted."
+	 );
+
+	 document.title = "⚠️ Break Bank Empty";
+
          mode = 'paused';
          last = null;
       }
@@ -597,14 +617,18 @@ if (
     lastBeepMilestone = currentMilestone;
 }
  updateProjection();
- requestAnimationFrame(update);
 }
 
 setInterval(saveState, 5000);
 window.addEventListener('beforeunload', saveState);
+
+if ("Notification" in window) {
+   Notification.requestPermission();
+}
+
 loadState();
 updateProjection();
-requestAnimationFrame(update);
+setInterval (update, 250);
 
     </script>
 </body>
