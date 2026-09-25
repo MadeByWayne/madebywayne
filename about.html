@@ -16,9 +16,18 @@ body {
 	text-align: left;
 }
 
-.panel {
-	margin: 20px auto;
-	max-width: 900px;
+.page-content {
+    margin-left: 200px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .timer {
@@ -48,43 +57,61 @@ button {
 }
 
 .sidebar {
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: 200px;
-	height: 100vh;
-	background: #161616;
-	padding: 20px;
-	box-sizing: border-box;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: 100vh;
+    background: #161616;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: width 0.3s ease;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: #999999;
+    font-size: 24px;
+    cursor: pointer;
+    margin-bottom: 0px;
 }
 
 .sidebar a {
-	display: block;
-	color: #999999;
-	text-decoration: none;
-	padding: 10px;
-	margin-bottom: 5px;
-	text-align: left;
+    display: block;
+    color: #999999;
+    text-decoration: none;
+    padding: 10px 0;
+    text-align: left;
 }
 
 .sidebar a:hover {
-	background: #333333;
-	color: white;
-}
-
-.sidebar-logo {
-	display: block;
-	padding: 0;
-	margin-bottom: 20px;
+    color: white;
 }
 
 .sidebar-logo img {
-	width: 128px;
-	height: auto;
-	display: block;
-	margin: 0 auto;
+    width: 100%;
+    height: auto;
 }
 
+/* Collapsed sidebar */
+.sidebar.collapsed {
+    width: 40px;
+}
+
+.sidebar.collapsed + .page-content {
+    margin-left: 40px;
+}
+
+.sidebar.collapsed .sidebar-link {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-logo {
+    display: none;
+}
+
+<!--
 footer {
 	position: fixed;
 	bottom: 0;
@@ -96,23 +123,29 @@ footer {
 	text-align: left;
 	padding: 10px;
 }
+-->
 
 </style>
 </head>
 <body>
 
-<nav class="sidebar">
-	<a href="index.html" class="sidebar-logo">
-	<img src="logo.png" alt="Made by Wayne">
-	</a>
+<div class="sidebar" id="sidebar">
 
-	<a href="index.html">Timer</a>
-	<a href="projects.html">Projects</a>	
-	<a href="random.html">Random</a>
-	<a href="about.html">About</a>
-</nav>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
 
-<div class="panel">
+    <a href="index.html" class="sidebar-logo">
+        <img src="logo.png" alt="Made by Wayne">
+    </a>
+
+    <a href="index.html" class="sidebar-link">Wayne Technique</a>
+    <a href="projects.html" class="sidebar-link">Projects</a>
+    <a href="random.html" class="sidebar-link">Random</a>
+    <a href="about.html" class="sidebar-link">About</a>
+
+</div>
+
+<div class="page-content">
+<div class="container">
 
 <h1>About</h1>
 
@@ -130,10 +163,21 @@ AI has been used for almost all the coding. Not the logo though. That's just an 
 </p>
 
 </div>
+</div>
 
+<!--
 <footer>
 	Made by Wayne
 </footer>
+-->
 
+<script>
+
+
+function toggleSidebar() {
+	document.getElementById("sidebar").classList.toggle("collapsed");
+}
+
+</script>
 </body>
 </html>
