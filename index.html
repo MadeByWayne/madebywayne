@@ -25,7 +25,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 600px;
+    max-width: 650px;
     padding: 20px;
     box-sizing: border-box;
 }
@@ -94,7 +94,6 @@ button {
     height: auto;
 }
 
-/* Collapsed sidebar */
 .sidebar.collapsed {
     width: 40px;
 }
@@ -111,22 +110,7 @@ button {
     display: none;
 }
 
-<!--
-footer {
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	width: 100%;
-
-	background: #161616;
-	color: #999999;
-	text-align: left;
-	padding: 10px;
-}
--->
-
 </style>
-
 </head>
 <body>
 
@@ -139,11 +123,13 @@ footer {
     </a>
 
     <a href="index.html" class="sidebar-link">Wayne Technique</a>
+    <a href="interval.html" class="sidebar-link">Interval Timer</a>
     <a href="projects.html" class="sidebar-link">Projects</a>
-    <a href="random.html" class="sidebar-link">Random</a>
+    <a href="store.html" class="sidebar-link">Store</a>
     <a href="about.html" class="sidebar-link">About</a>
 
 </div>
+
 <div class="page-content">
     <div class="container">
 
@@ -161,9 +147,8 @@ footer {
         <div id="breakCount" class="small">0</div>
         <br>
 
-        <button onclick="startTimers()">Start</button>
+        <button onclick="startTimers()">Start/Resume</button>
         <button onclick="pauseTimers()">Pause</button>
-        <button onclick="resumeMode()">Resume</button>
         <button onclick="breakMode()">Break</button>
         <button onclick="resetTimers()">Reset</button>
 	
@@ -188,7 +173,6 @@ footer {
             <button onclick="resetDailyHistory()">Reset Daily History</button>
         </details>
 
-
         <br>
 	<details>
 	<hr>
@@ -202,29 +186,20 @@ footer {
 	    <br><br>
 
 	    <button onclick="applyStartingTime()">Apply Starting Time</button>
-<!--
-	    <br>
-	    <button onclick="deposit5Min()">Transfer 5 Min from Break Bank</button>
-	    <button onclick="depositAll()">Transfer Full Break Bank</button>
--->
+
 	    <br><br>
 
         </details>
 
-
     </div>
 </div>
-
-<!--
-<footer>
-	Made by Wayne
-</footer>
--->
 
     <script>
         // =====================================================
         // Variables
         // =====================================================
+
+	alert("JavaScript is working!");
 
         let normal = 0;
         let slow = 0;
@@ -237,7 +212,6 @@ footer {
         let dailyHistory = [];
 
         let lastBeepMilestone = 0;
-        let thirtyMinuteAlertGiven = false;
         let bankEmptyAlertPlayed = false;
 
 	const beepSound = new Audio("beep1.mp3");
@@ -245,8 +219,6 @@ footer {
 
 	beepSound.preload = "auto";
 	tripleBeepSound.preload = "auto";
-
-Notification.requestPermission();
 
 function saveState() {
 
@@ -267,10 +239,12 @@ function toggleSidebar() {
 }
 
 function loadState() {
-    const saved =
-        localStorage.getItem('pomodoroTimerState');
 
-    if (saved) {
+    const saved = localStorage.getItem('pomodoroTimerState');
+
+    if (!saved) return;
+
+    try {
 
         const state = JSON.parse(saved);
 
@@ -278,15 +252,18 @@ function loadState() {
         slow = state.slow || 0;
         breakCount = state.breakCount || 0;
         breakHistory = state.breakHistory || [];
+        dailyHistory = state.dailyHistory || [];
 
-        document.getElementById('breakCount').textContent =
-            breakCount;
-
-	dailyHistory =
-    	     state.dailyHistory || [];
+        document.getElementById('breakCount').textContent = breakCount;
 
         updateBreakHistory();
-	updateDailyHistory();
+        updateDailyHistory();
+
+    } catch (error) {
+
+        console.error("Could not load saved timer state:", error);
+
+        localStorage.removeItem('pomodoroTimerState');
     }
 }
 
@@ -331,10 +308,18 @@ function updateProjection() {
         'Projected 8-Hour Completion: ' + timeString;
 }
 
-function startTimers(){
-    last=performance.now();
-    mode='running';
+function startTimers() {
+
+    alert("Start pressed!");
+
+    if (mode === 'break') {
+        logBreak();
+    }
+
+    last = performance.now();
+    mode = 'running';
 }
+
 
 function pauseTimers(){
 
@@ -346,14 +331,6 @@ function pauseTimers(){
     last=null;
 
     saveState();
-}
-
-function resumeMode(){
-
-    logBreak();
-
-    last = performance.now();
-    mode = 'running';
 }
 
 function breakMode() {
@@ -386,25 +363,6 @@ function playTripleBeep() {
     tripleBeepSound.currentTime = 0;
     tripleBeepSound.play();
 }
-
-/*
-function deposit5Min() {
-    const fiveMinutes = 5 * 60 * 1000;
-
-    if (slow >= fiveMinutes) {
-        slow -= fiveMinutes;
-        normal += fiveMinutes;
-    } else {
-        normal += slow;
-        slow = 0;
-    }
-}
-
-function depositAll() {
-    normal += slow;
-    slow = 0;
-}
-*/
 
 function logBreak() {
 
@@ -478,7 +436,7 @@ function saveDay() {
 
     updateDailyHistory();
 
-    resetTimers()
+    resetTimers();
 
     saveState();
 }
@@ -516,27 +474,6 @@ function resetDailyHistory() {
 
     saveState();
 }
-
-/*
-function applyStartingValues() {
-
-	normal = Number(document.getElementById('startWorkHours').value) * 3600000 + Number(document.getElementById('startWorkMinutes').value) * 60000 + Number(document.getElementById('startWorkSeconds').value) * 1000;
-
-	slow = Number(document.getElementById('startBreakHours').value) * 3600000 + Number(document.getElementById('startBreakMinutes').value) * 60000 + Number(document.getElementById('startBreakSeconds').value) * 1000;
-
-	breakCount = Number(document.getElementById('startBreakCount').value);
-
-	document.getElementById('t1').textContent = fmt(normal);
-	document.getElementById('t2').textContent = fmt(slow);
-	document.getElementById('breakCount').textContent = breakCount;
-
-	bankEmptyAlertPlayed = (slow <= 0);
-
-	lastBeepMilestone = Math.floor(slow / (5 * 60 * 1000));
-
-	saveState();
-}
-*/
 
 function applyStartingTime() {
 
@@ -582,39 +519,37 @@ function applyStartingTime() {
 
 function resetTimers() {
 
-	normal = 0;
-	slow = 0;
-	breakCount = 0;
-	breakHistory = [];
-	lastBeepMilestone = 0;
-	thirtyMinuteAlertGiven = false;
-	bankEmptyAlertPlayed = false;
+    normal = 0;
+    slow = 0;
+    breakCount = 0;
+    breakHistory = [];
+    lastBeepMilestone = 0;
+    bankEmptyAlertPlayed = false;
 
-	mode = 'paused';
-	last = null;
+    mode = 'paused';
+    last = null;
+    breakStartTime = null;
 
-	document.getElementById('breakCount').textContent = '0';
+    document.getElementById('breakCount').textContent = '0';
 
-	updateBreakHistory();
-
-	localStorage.removeItem('pomodoroTimerState');
+    updateBreakHistory();
 }
 
-function showNotifacation(title, message) {
+function showNotification(title, message) {
 
-		if (Notification.permission === "granted") {
+    	if (Notification.permission === "granted") {
 
-			new Notifiction(title, {
-				body: message,
-				icon: "timer_icon.png"
-			});
-		} 
+		new Notification(title, {
+			body: message,
+			icon: "timer_icon.png"
+		});
 
-		else if (Notification.permission !== "denied") {
+	} else if (Notification.permission !== "denied") {
 
-			Notification.requestPermission();
-		}
+	Notification.requestPermission();
+	}
 }
+
 
 function update(){
 
