@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interval Timer</title>
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+	font-family: Arial, sans-serif;
+	background: #242424;
+	color: #999999;
+	padding: 30px;
+	text-align: center;
+    }
+
+    .page {
+        width: min(650px, 100%);
+        margin: 0 auto;
+    }
+
+    h1 {
+        text-align: center;
+        margin: 0 0 24px;
+        font-size: 32px;
+    }
+
+    .panel {
+        background: #242424;
+        border-radius: 14px;	
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .interval-row {
+        display: grid;
+        grid-template-columns: 1fr 150px 48px;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 10px;
+    }
+
+    label {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    input {
+        width: 100%;
+        border: 1px solid #bbb;
+        border-radius: 8px;
+        padding: 11px 10px;
+        font-size: 16px;
+        background: #999999;
+    }
+
+    input:focus {
+        outline: 2px solid #777;
+        outline-offset: 1px;
+    }
+
+    button {
+	background: #161616;
+	color: #999999;
+	padding: 10px 18px;
+	margin: 5px;
+	font-size: 1rem;
+	cursor: pointer;
+	border-radius: 12px;
+    }
+	
+    .remove-btn {
+        height: 43px;
+        padding: 8px;
+        font-size: 20px;
+        background: #161616;
+    }
+
+    .add-btn {
+        width: 100%;
+        background: #161616;
+        margin-top: 4px;
+    }
+
+    .timer-panel {
+        text-align: center;
+    }
+
+    .current-name {
+        font-size: 24px;
+        min-height: 29px;
+        margin-bottom: 8px;
+    }
+
+    .main-timer {
+        font-size: clamp(64px, 16vw, 120px);
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        margin: 10px 0 20px;
+    }
+
+    .progress {
+        height: 8px;
+        background: #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 0 auto 18px;
+        max-width: 600px;
+    }
+
+    .progress-bar {
+        height: 100%;
+        width: 100%;
+        background: #999999;
+        transform-origin: left center;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 45px;
+        margin: 10px 0 20px;
+        flex-wrap: wrap;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #999999;
+        margin-top: 3px;
+    }
+
+    .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .controls button {
+        min-height: 50px;
+    }
+
+    .position {
+        color: #999999;
+        font-size: 14px;
+        margin-top: 12px;
+    }
+
+    @media (max-width: 650px) {
+
+
+        .panel { padding: 16px; }
+
+        .interval-row {
+            grid-template-columns: 1fr 105px 42px;
+        }
+
+        .stats { gap: 25px; }
+
+        .controls {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: 100vh;
+    background: #161616;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: width 0.3s ease;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: #999999;
+    font-size: 24px;
+    cursor: pointer;
+    margin-bottom: 0px;
+}
+
+.sidebar a {
+    display: block;
+    color: #999999;
+    text-decoration: none;
+    padding: 10px 0;
+    text-align: left;
+}
+
+.sidebar a:hover {
+    color: white;
+}
+
+.sidebar-logo img {
+    width: 100%;
+    height: auto;
+}
+
+.sidebar.collapsed {
+    width: 40px;
+}
+
+.sidebar.collapsed + .page-content {
+    margin-left: 40px;
+}
+
+.sidebar.collapsed .sidebar-link {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-logo {
+    display: none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+
+    <a href="index.html" class="sidebar-logo">
+        <img src="logo.png" alt="Made by Wayne">
+    </a>
+
+    <a href="index.html" class="sidebar-link">Wayne Technique</a>
+    <a href="interval.html" class="sidebar-link">Interval Timer</a>
+    <a href="projects.html" class="sidebar-link">Projects</a>
+    <a href="store.html" class="sidebar-link">Store</a>
+    <a href="about.html" class="sidebar-link">About</a>
+
+</div>
+
+
+<div class="page">
+    <h1>Interval Timer</h1>
+
+    <div class="panel">
+        <div id="intervalList"></div>
+        <button class="add-btn" id="addIntervalBtn" type="button">+ Add Interval</button>
+    </div>
+
+    <div class="panel timer-panel">
+        <div class="current-name" id="currentName">Ready</div>
+
+        <div class="main-timer" id="mainTimer">05:00</div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="stats">
+            <div>
+                <div class="stat-value" id="totalRuntime">00:00</div>
+                <div class="stat-label">Total Runtime</div>
+            </div>
+
+            <div>
+                <div class="stat-value" id="intervalCount">0</div>
+                <div class="stat-label">Intervals Completed</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="start-btn" id="startBtn" type="button">Start</button>
+            <button class="next-btn" id="nextBtn" type="button">Next</button>
+            <button class="pause-btn" id="pauseBtn" type="button">Pause / Stop</button>
+            <button class="reset-btn" id="resetBtn" type="button">Reset</button>
+        </div>
+
+        <div class="position" id="position">Interval 1 of 1</div>
+    </div>
+
+</div>
+
+<script>
+
+    function toggleSidebar() {
+	document.getElementById("sidebar").classList.toggle("collapsed");
+    }
+
+(() => {
+    const intervalList = document.getElementById("intervalList");
+    const addIntervalBtn = document.getElementById("addIntervalBtn");
+
+    const currentName = document.getElementById("currentName");
+    const mainTimer = document.getElementById("mainTimer");
+    const totalRuntime = document.getElementById("totalRuntime");
+    const intervalCount = document.getElementById("intervalCount");
+    const position = document.getElementById("position");
+    const progressBar = document.getElementById("progressBar");
+
+    const startBtn = document.getElementById("startBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let intervals = [
+        { name: "Active", seconds: 60 },
+        { name: "Rest", seconds: 150 }
+    ];
+
+    let currentIndex = 0;
+    let remaining = intervals[0].seconds;
+    let totalElapsed = 0;
+    let completedIntervals = 0;
+
+    let running = false;
+    let lastTimestamp = null;
+    let animationFrame = null;
+
+    function formatTime(seconds, showHours = false) {
+        seconds = Math.max(0, seconds);
+
+        const wholeSeconds = Math.floor(seconds);
+        const hours = Math.floor(wholeSeconds / 3600);
+        const minutes = Math.floor((wholeSeconds % 3600) / 60);
+        const secs = wholeSeconds % 60;
+
+        if (showHours || hours > 0) {
+            return (
+                String(hours).padStart(2, "0") + ":" +
+                String(minutes).padStart(2, "0") + ":" +
+                String(secs).padStart(2, "0")
+            );
+        }
+
+        return (
+            String(minutes).padStart(2, "0") + ":" +
+            String(secs).padStart(2, "0")
+        );
+    }
+
+    function formatInputValue(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function parseDuration(value) {
+        value = value.trim();
+
+        if (!value) return 0;
+
+        // Accept MM:SS or HH:MM:SS
+        if (value.includes(":")) {
+            const parts = value.split(":").map(Number);
+
+            if (parts.some(Number.isNaN)) return 0;
+
+            if (parts.length === 2) {
+                return Math.max(0, parts[0] * 60 + parts[1]);
+            }
+
+            if (parts.length === 3) {
+                return Math.max(0, parts[0] * 3600 + parts[1] * 60 + parts[2]);
+            }
+
+            return 0;
+        }
+
+        // A plain number is treated as seconds.
+        const seconds = Number(value);
+        return Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+    }
+
+    function renderIntervalInputs() {
+        intervalList.innerHTML = "";
+
+        intervals.forEach((interval, index) => {
+            const row = document.createElement("div");
+            row.className = "interval-row";
+
+            const nameDiv = document.createElement("div");
+            const nameLabel = document.createElement("label");
+            nameLabel.textContent = `Interval ${index + 1} Name`;
+
+            const nameInput = document.createElement("input");
+            nameInput.type = "text";
+            nameInput.value = interval.name;
+            nameInput.placeholder = "e.g. Jog, Pushups, Rest";
+            nameInput.dataset.index = index;
+            nameInput.dataset.type = "name";
+
+            nameDiv.appendChild(nameLabel);
+            nameDiv.appendChild(nameInput);
+
+            const durationDiv = document.createElement("div");
+            const durationLabel = document.createElement("label");
+            durationLabel.textContent = "Time";
+
+            const durationInput = document.createElement("input");
+            durationInput.type = "text";
+            durationInput.inputMode = "numeric";
+            durationInput.value = formatInputValue(interval.seconds);
+            durationInput.placeholder = "MM:SS";
+            durationInput.dataset.index = index;
+            durationInput.dataset.type = "duration";
+
+            durationDiv.appendChild(durationLabel);
+            durationDiv.appendChild(durationInput);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "remove-btn";
+            removeBtn.type = "button";
+            removeBtn.textContent = "×";
+            removeBtn.title = "Remove interval";
+            removeBtn.dataset.index = index;
+
+            row.appendChild(nameDiv);
+            row.appendChild(durationDiv);
+            row.appendChild(removeBtn);
+
+            intervalList.appendChild(row);
+        });
+    }
+
+    function readIntervalInputs() {
+        const rows = intervalList.querySelectorAll(".interval-row");
+
+        rows.forEach((row, index) => {
+            const nameInput = row.querySelector('[data-type="name"]');
+            const durationInput = row.querySelector('[data-type="duration"]');
+
+            intervals[index].name = nameInput.value.trim() || `Interval ${index + 1}`;
+            intervals[index].seconds = parseDuration(durationInput.value);
+        });
+    }
+
+    function updateDisplay() {
+        if (!intervals.length) {
+            currentName.textContent = "No intervals";
+            mainTimer.textContent = "00:00";
+            position.textContent = "Add an interval to begin";
+            progressBar.style.width = "0%";
+            return;
+        }
+
+        const current = intervals[currentIndex];
+
+        currentName.textContent = current.name;
+        mainTimer.textContent = formatTime(remaining);
+        totalRuntime.textContent = formatTime(totalElapsed, true);
+        intervalCount.textContent = completedIntervals;
+
+        position.textContent = `Interval ${currentIndex + 1} of ${intervals.length}`;
+
+        const duration = Math.max(1, current.seconds);
+        const percent = Math.max(0, Math.min(100, (remaining / duration) * 100));
+        progressBar.style.width = percent + "%";
+
+        startBtn.textContent = running ? "Running..." : (totalElapsed > 0 ? "Resume" : "Start");
+        startBtn.disabled = running;
+    }
+
+    function resetTimerState() {
+        stopAnimation();
+
+        readIntervalInputs();
+
+        currentIndex = 0;
+        remaining = intervals.length ? intervals[0].seconds : 0;
+        totalElapsed = 0;
+        completedIntervals = 0;
+        running = false;
+        lastTimestamp = null;
+
+        updateDisplay();
+    }
+
+    function stopAnimation() {
+        if (animationFrame !== null) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+    }
+
+    function beep(times = 1) {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const ctx = new AudioContext();
+
+            const playBeep = (delay) => {
+                setTimeout(() => {
+                    const oscillator = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    oscillator.frequency.value = 880;
+                    oscillator.type = "sine";
+
+                    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+
+                    oscillator.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    oscillator.start();
+                    oscillator.stop(ctx.currentTime + 0.2);
+                }, delay);
+            };
+
+            for (let i = 0; i < times; i++) {
+                playBeep(i * 250);
+            }
+        } catch (error) {
+            // Audio is optional; the timer continues if the browser blocks it.
+        }
+    }
+
+    function goToNextInterval() {
+        if (!intervals.length) return;
+
+        if (currentIndex < intervals.length - 1) {
+            completedIntervals++;
+            currentIndex++;
+            remaining = intervals[currentIndex].seconds;
+            beep(1);
+        } else {
+            // The final interval has finished.
+            completedIntervals++;
+            running = false;
+            stopAnimation();
+            remaining = 0;
+            lastTimestamp = null;
+            beep(3);
+        }
+
+        updateDisplay();
+    }
+
+    function finishCurrentInterval() {
+        if (currentIndex < intervals.length - 1) {
+            completedIntervals++;
+            currentIndex++;
+            remaining = intervals[currentIndex].seconds;
+            beep(1);
+        } else {
+            completedIntervals++;
+            remaining = 0;
+            running = false;
+            stopAnimation();
+            lastTimestamp = null;
+            beep(3);
+        }
+    }
+
+    function tick(timestamp) {
+        if (!running) return;
+
+        if (lastTimestamp === null) {
+            lastTimestamp = timestamp;
+        }
+
+        const delta = (timestamp - lastTimestamp) / 1000;
+        lastTimestamp = timestamp;
+
+        totalElapsed += delta;
+        remaining -= delta;
+
+        while (remaining <= 0 && running) {
+            const overflow = -remaining;
+
+            if (currentIndex < intervals.length - 1) {
+                completedIntervals++;
+                currentIndex++;
+                beep(1);
+
+                remaining = intervals[currentIndex].seconds - overflow;
+
+                // Prevent a zero-length interval from getting stuck.
+                if (intervals[currentIndex].seconds <= 0) {
+                    remaining = -overflow;
+                    continue;
+                }
+            } else {
+                completedIntervals++;
+                beep(3);
+
+                // Automatically start the interval sequence over.
+                currentIndex = 0;
+                remaining = intervals[0].seconds;
+
+                // Keep the total runtime and completed-interval count running
+                // so they represent the entire continuous session.
+                if (intervals[0].seconds <= 0) {
+                    running = false;
+                    remaining = 0;
+                    break;
+                }
+            }
+        }
+
+        updateDisplay();
+
+        if (running) {
+            animationFrame = requestAnimationFrame(tick);
+        } else {
+            animationFrame = null;
+        }
+    }
+
+    function startTimer() {
+        if (!intervals.length || running) return;
+
+        readIntervalInputs();
+
+        // Keep the currently selected interval in sync with edited inputs.
+        if (remaining <= 0) {
+            remaining = intervals[currentIndex].seconds;
+        }
+
+        if (intervals[currentIndex].seconds <= 0) {
+            alert("Please give the current interval a duration greater than zero.");
+            return;
+        }
+
+        // If the user changed a duration while paused, use the new value.
+        if (totalElapsed === 0 && currentIndex === 0) {
+            remaining = intervals[0].seconds;
+        }
+
+        running = true;
+        lastTimestamp = null;
+        beep(1);
+
+        animationFrame = requestAnimationFrame(tick);
+        updateDisplay();
+    }
+
+    function pauseTimer() {
+        running = false;
+        stopAnimation();
+        lastTimestamp = null;
+        updateDisplay();
+    }
+
+    function nextTimer() {
+        if (!intervals.length) return;
+
+        readIntervalInputs();
+
+        if (currentIndex < intervals.length - 1) {
+            completedIntervals++;
+            currentIndex++;
+            remaining = intervals[currentIndex].seconds;
+            beep(1);
+        } else {
+            // Next on the last interval loops directly back to the first.
+            completedIntervals++;
+            currentIndex = 0;
+            remaining = intervals[0].seconds;
+            beep(1);
+
+            // If the timer was already running, keep it running.
+            // If it was paused, it remains paused.
+        }
+
+        updateDisplay();
+    }
+
+    addIntervalBtn.addEventListener("click", () => {
+        readIntervalInputs();
+
+        intervals.push({
+            name: `Interval ${intervals.length + 1}`,
+            seconds: 60
+        });
+
+        renderIntervalInputs();
+        updateDisplay();
+    });
+
+    intervalList.addEventListener("click", (event) => {
+        const button = event.target.closest(".remove-btn");
+        if (!button) return;
+
+        if (intervals.length <= 1) {
+            alert("You need at least one interval.");
+            return;
+        }
+
+        const index = Number(button.dataset.index);
+
+        readIntervalInputs();
+        intervals.splice(index, 1);
+
+        if (currentIndex >= intervals.length) {
+            currentIndex = intervals.length - 1;
+        }
+
+        remaining = intervals[currentIndex].seconds;
+
+        renderIntervalInputs();
+        updateDisplay();
+    });
+
+    intervalList.addEventListener("change", () => {
+        readIntervalInputs();
+
+        if (!running) {
+            remaining = intervals[currentIndex].seconds;
+            updateDisplay();
+        }
+    });
+
+    startBtn.addEventListener("click", startTimer);
+    pauseBtn.addEventListener("click", pauseTimer);
+    nextBtn.addEventListener("click", nextTimer);
+    resetBtn.addEventListener("click", resetTimerState);
+
+    // Prevent accidental form-like behavior if this file is later embedded in a form.
+    document.addEventListener("keydown", (event) => {
+        if (event.code === "Space" &&
+            event.target.tagName !== "INPUT" &&
+            event.target.tagName !== "TEXTAREA") {
+            event.preventDefault();
+
+            if (running) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+    });
+
+    renderIntervalInputs();
+    updateDisplay();
+})();
+</script>
+
+</body>
+</html>
