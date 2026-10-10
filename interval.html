@@ -1,232 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Interval Timer</title>
-<style>
-    * { box-sizing: border-box; }
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Made By Wayne</title>
+	<link rel="icon" type="image/png" href="logo_icon.png">
+	<link rel="stylesheet" href="style.css">
 
-    body {
-	font-family: Arial, sans-serif;
-	background: #242424;
-	color: #999999;
-	padding: 30px;
-	text-align: center;
-    }
-
-    .page {
-        width: min(650px, 100%);
-        margin: 0 auto;
-    }
-
-    h1 {
-        text-align: center;
-        margin: 0 0 24px;
-        font-size: 32px;
-    }
-
-    .panel {
-        background: #242424;
-        border-radius: 14px;	
-        padding: 20px;
-        margin-bottom: 16px;
-    }
-
-    .interval-row {
-        display: grid;
-        grid-template-columns: 1fr 150px 48px;
-        gap: 10px;
-        align-items: end;
-        margin-bottom: 10px;
-    }
-
-    label {
-        display: block;
-        font-size: 14px;
-        margin-bottom: 6px;
-    }
-
-    input {
-        width: 100%;
-        border: 1px solid #bbb;
-        border-radius: 8px;
-        padding: 11px 10px;
-        font-size: 16px;
-        background: #999999;
-	text-align: center;
-    }
-
-    input:focus {
-        outline: 2px solid #bbb;
-    }
-
-    button {
-	background: #161616;
-	color: #999999;
-	padding: 10px 18px;
-	margin: 5px;
-	font-size: 1rem;
-	cursor: pointer;
-	border-radius: 12px;
-    }
-	
-    .remove-btn {
-        height: 43px;
-        padding: 4px;
-        font-size: 16px;
-        background: #161616;
-	border-radius: 8px;
-	margin: 5px 0px 0px 5px;
-    }
-
-    .add-btn {
-        width: 33%;
-        background: #161616;
-        margin-top: 4px;
-    }
-
-    .timer-panel {
-        text-align: center;
-    }
-
-    .current-name {
-        font-size: 32px;
-        min-height: 29px;
-        margin-bottom: 8px;
-    }
-
-    .main-timer {
-        font-size: clamp(64px, 16vw, 120px);
-        line-height: 1;
-        font-variant-numeric: tabular-nums;
-        margin: 10px 0 20px;
-    }
-
-    .progress {
-        height: 8px;
-        background: #ddd;
-        border-radius: 10px;
-        overflow: hidden;
-        margin: 0 auto 18px;
-        max-width: 600px;
-    }
-
-    .progress-bar {
-        height: 100%;
-        width: 100%;
-        background: #999999;
-        transform-origin: left center;
-    }
-
-    .stats {
-        display: flex;
-        justify-content: center;
-        gap: 45px;
-        margin: 10px 0 20px;
-        flex-wrap: wrap;
-    }
-
-    .stat-value {
-        font-size: 28px;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .stat-label {
-        font-size: 13px;
-        color: #999999;
-        margin-top: 3px;
-    }
-
-    .controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        max-width: 500px;
-        margin: 0 auto;
-    }
-
-    .controls button {
-        min-height: 50px;
-    }
-
-    .position {
-        color: #999999;
-        font-size: 14px;
-        margin-top: 12px;
-    }
-
-    @media (max-width: 650px) {
-
-
-        .panel { padding: 16px; }
-
-        .interval-row {
-            grid-template-columns: 1fr 105px 42px;
-        }
-
-        .stats { gap: 25px; }
-
-        .controls {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-
-.sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 200px;
-    height: 100vh;
-    background: #161616;
-    padding: 20px;
-    box-sizing: border-box;
-    transition: width 0.3s ease;
-}
-
-.sidebar-toggle {
-    background: none;
-    border: none;
-    color: #999999;
-    font-size: 24px;
-    cursor: pointer;
-    margin-bottom: 0px;
-}
-
-.sidebar a {
-    display: block;
-    color: #999999;
-    text-decoration: none;
-    padding: 10px 0;
-    text-align: left;
-}
-
-.sidebar a:hover {
-    color: white;
-}
-
-.sidebar-logo img {
-    width: 100%;
-    height: auto;
-}
-
-.sidebar.collapsed {
-    width: 40px;
-}
-
-.sidebar.collapsed + .page-content {
-    margin-left: 40px;
-}
-
-.sidebar.collapsed .sidebar-link {
-    display: none;
-}
-
-.sidebar.collapsed .sidebar-logo {
-    display: none;
-}
-
-</style>
 </head>
 <body>
 
@@ -247,12 +27,22 @@
 </div>
 
 
-<div class="page">
+<div class="page-content">
     <h1>Interval Timer</h1>
 
     <div class="panel">
-        <div id="intervalList"></div>
-        <button class="add-btn" id="addIntervalBtn" type="button">+ Add Interval</button>
+<button class="collapse-btn" id="toggleInputsBtn" type="button"
+        aria-expanded="true" aria-controls="intervalInputs">
+    ▼ Hide Intervals
+</button>
+
+<div id="intervalInputs">
+    <div id="intervalList"></div>
+    <button class="add-btn" id="addIntervalBtn" type="button">
+        + Add Interval
+    </button>
+</div>
+
     </div>
 
     <div class="panel timer-panel">
@@ -283,7 +73,6 @@
             <button class="reset-btn" id="resetBtn" type="button">Reset</button>
         </div>
 
-        <div class="position" id="position">Interval 1 of 1</div>
     </div>
 
 </div>
@@ -302,13 +91,15 @@
     const mainTimer = document.getElementById("mainTimer");
     const totalRuntime = document.getElementById("totalRuntime");
     const intervalCount = document.getElementById("intervalCount");
-    const position = document.getElementById("position");
     const progressBar = document.getElementById("progressBar");
 
     const startBtn = document.getElementById("startBtn");
     const nextBtn = document.getElementById("nextBtn");
     const pauseBtn = document.getElementById("pauseBtn");
     const resetBtn = document.getElementById("resetBtn");
+
+    const beepSound = new Audio("beep1.mp3");
+    beepSound.preload = "auto";
 
     let intervals = [
         { name: "Active", seconds: 60 },
@@ -323,6 +114,19 @@
     let running = false;
     let lastTimestamp = null;
     let animationFrame = null;
+
+    const toggleInputsBtn = document.getElementById("toggleInputsBtn");
+    const intervalInputs = document.getElementById("intervalInputs");
+
+    toggleInputsBtn.addEventListener("click", () => {
+    const isExpanded = toggleInputsBtn.getAttribute("aria-expanded") === "true";
+
+    intervalInputs.hidden = isExpanded;
+    toggleInputsBtn.setAttribute("aria-expanded", String(!isExpanded));
+    toggleInputsBtn.textContent = isExpanded
+        ? "▶ Show Intervals"
+        : "▼ Hide Intervals";
+});
 
     function formatTime(seconds, showHours = false) {
         seconds = Math.max(0, seconds);
@@ -458,8 +262,6 @@
         totalRuntime.textContent = formatTime(totalElapsed, true);
         intervalCount.textContent = completedIntervals;
 
-        position.textContent = `Interval ${currentIndex + 1} of ${intervals.length}`;
-
         const duration = Math.max(1, current.seconds);
         const percent = Math.max(0, Math.min(100, (remaining / duration) * 100));
         progressBar.style.width = percent + "%";
@@ -490,40 +292,17 @@
         }
     }
 
-    function beep(times = 1) {
-        try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContext) return;
+function beep(times = 1) {
+    for (let i = 0; i < times; i++) {
+        setTimeout(() => {
+            beepSound.currentTime = 0;
 
-            const ctx = new AudioContext();
-
-            const playBeep = (delay) => {
-                setTimeout(() => {
-                    const oscillator = ctx.createOscillator();
-                    const gain = ctx.createGain();
-
-                    oscillator.frequency.value = 880;
-                    oscillator.type = "sine";
-
-                    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.01);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
-
-                    oscillator.connect(gain);
-                    gain.connect(ctx.destination);
-
-                    oscillator.start();
-                    oscillator.stop(ctx.currentTime + 0.2);
-                }, delay);
-            };
-
-            for (let i = 0; i < times; i++) {
-                playBeep(i * 250);
-            }
-        } catch (error) {
-            // Audio is optional; the timer continues if the browser blocks it.
-        }
+            beepSound.play().catch(error => {
+                console.warn("Unable to play MP3:", error);
+            });
+        }, i * 250);
     }
+}
 
     function goToNextInterval() {
         if (!intervals.length) return;
