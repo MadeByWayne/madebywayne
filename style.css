@@ -99,6 +99,16 @@ button {
     width: 40px;
 }
 
+.sidebar.collapsed .sidebar-toggle {
+    display: block;
+    width: 28px;
+    margin: 0 auto 0 -14px;
+    padding: 6px 0;
+    text-align: center;
+    position: relative;
+    top: 8px;
+}
+
 .sidebar.collapsed + .page-content {
     margin-left: 40px;
 }
@@ -111,16 +121,16 @@ button {
     display: none;
 }
 
-    .page {
-        width: min(650px, 100%);
-        margin: 0 auto;
-    }
+.page {
+	width: min(650px, 100%);
+	margin: 0 auto;
+}
 
-    h1 {
-        text-align: center;
-        margin: 0 0 24px;
-        font-size: 32px;
-    }
+h1 {
+	text-align: center;
+	margin: 0 0 24px;
+    font-size: 32px;
+}
 
 .panel {
     width: 100%;
@@ -131,19 +141,19 @@ button {
     padding: 20px;
 }
 
-    .interval-row {
+.interval-row {
         display: grid;
         grid-template-columns: 1fr 150px 48px;
         gap: 10px;
         align-items: end;
         margin-bottom: 10px;
-    }
+}
 
-    label {
-        display: block;
-        font-size: 14px;
-        margin-bottom: 6px;
-    }
+label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
 
 input {
     width: 100%;
@@ -156,111 +166,106 @@ input {
     text-align: center;
 }
 
-    input:focus {
-        outline: 2px solid #bbb;
-    }
+input:focus {
+    outline: 2px solid #bbb;
+}
 
-    .remove-btn {
-        height: 43px;
-        padding: 4px;
-        font-size: 16px;
-        background: #161616;
+.remove-btn {
+    height: 43px;
+    padding: 4px;
+    font-size: 16px;
+    background: #161616;
 	border-radius: 8px;
 	margin: 5px 0px 0px 5px;
     }
 
-    .add-btn {
-        width: 33%;
-        background: #161616;
-        margin-top: 4px;
-    }
+.add-btn {
+    width: 33%;
+    background: #161616;
+    margin-top: 4px;
+}
 
-    .timer-panel {
-        text-align: center;
-    }
+.timer-panel {
+    text-align: center;
+}
 
-    .current-name {
-        font-size: 32px;
-        min-height: 29px;
-        margin-top: 0px;
-        margin-bottom: 8px;
-    }
+.current-name {
+    font-size: 32px;
+    min-height: 29px;
+    margin-top: 0px;
+    margin-bottom: 8px;
+}
 
-    .main-timer {
-        font-size: clamp(64px, 16vw, 120px);
-        line-height: 1;
-        font-variant-numeric: tabular-nums;
-        margin: 5px 0 20px;
-    }
+.main-timer {
+    font-size: clamp(64px, 16vw, 120px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    margin: 5px 0 20px;
+}
 
-    .progress {
-        height: 8px;
-        background: #ddd;
-        border-radius: 10px;
-        overflow: hidden;
-        margin: 0 auto 18px;
-        max-width: 600px;
-    }
+.progress {
+    height: 8px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0 auto 18px;
+    max-width: 600px;
+}
 
-    .progress-bar {
-        height: 100%;
-        width: 100%;
-        background: #999999;
-        transform-origin: left center;
-    }
+.progress-bar {
+    height: 100%;
+    width: 100%;
+    background: #999999;
+    transform-origin: left center;
+}
 
-    .stats {
-        display: flex;
-        justify-content: center;
-        gap: 45px;
-        margin: 10px 0 20px;
-        flex-wrap: wrap;
-    }
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 45px;
+    margin: 10px 0 20px;
+    flex-wrap: wrap;
+}
 
-    .stat-value {
-        font-size: 28px;
-        font-variant-numeric: tabular-nums;
-    }
+.stat-value {
+    font-size: 28px;
+    font-variant-numeric: tabular-nums;
+}
 
-    .stat-label {
-        font-size: 13px;
-        color: #999999;
-        margin-top: 3px;
-    }
+.stat-label {
+    font-size: 13px;
+    color: #999999;
+    margin-top: 3px;
+}
 
+.controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.controls button {
+    min-height: 50px;
+}
+
+.position {
+    color: #999999;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+@media (max-width: 650px) {
+    .panel { padding: 16px; }
+    .interval-row {
+        grid-template-columns: 1fr 105px 42px;
+    }
+    .stats { gap: 25px; }
     .controls {
-        display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        max-width: 500px;
-        margin: 0 auto;
     }
-
-    .controls button {
-        min-height: 50px;
-    }
-
-    .position {
-        color: #999999;
-        font-size: 14px;
-        margin-top: 12px;
-    }
-
-    @media (max-width: 650px) {
-
-
-        .panel { padding: 16px; }
-
-        .interval-row {
-            grid-template-columns: 1fr 105px 42px;
-        }
-
-        .stats { gap: 25px; }
-
-        .controls {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
+}
 
 .collapse-btn {
     width: 100%;
